@@ -1,5 +1,13 @@
+#![allow(unused)]
+
 use log::*;
 use rusqlite::{Connection};
+use home;
+use std::{
+    fs
+};
+use std::fs::create_dir_all;
+use home::home_dir;
 
 // struct Player {
 //     name: String,
@@ -10,35 +18,36 @@ use rusqlite::{Connection};
 fn main() {
     env_logger::init();
     info!("Game started");
-    sql_connect();
+    sql_check();
+    create_file("Dundeons & Dragons", true)
 }
 
-fn sql_connect(){
+fn sql_check(){
     info!("sql_connect Called");
 
     let conn = Connection::open("db.sqlite");
     conn.unwrap().execute(
-        "create table if not exists main.palyer (
-                name text not null primary key,
-                race text not null,
-                class text not null
-            ) without rowid ;",
+        "create table if not exists main.Players (playerName text not null)",
         (),
     ).expect("Error");
 }
 
-// fn file_creator(file_name: &str, file_type: bool) {
-//     info!("File-Creator Called");
-//     match file_type {
-//         true => {
-//             info!("Creating directory named \"{file_name}\"");
-//         }
-//         false => {
-//             info!("Creating document named \"{file_name}\"");
-//         }
-//     }
-// }
+fn create_file(file_path: &str, file_type: bool) {
+    info!("File-Creator Called");
 
-fn create_player(name: &str, race: &str, class: &str) {
-    info!("Creating player \n named: {name}\n race: {race}\n class:{class}");
+    let mut home_dir = home_dir().to_owned();
+    let binding = home_dir.unwrap();
+    let home = binding.to_string_lossy() + "\\Desktop\\";
+    let path = home + file_path;
+
+    match file_type {
+        true => {
+            let path_override = path + "\\";
+            info!("Creating directory: {path_override}");
+            fs::create_dir_all(path_override.to_string());
+        }
+        false => {
+            info!("Creating document: {path}");
+        }
+    }
 }
